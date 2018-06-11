@@ -73,7 +73,7 @@ def cnn_model_fn(features, labels, mode):
     # the matrices values during the training.
 
     predictions = {
-        # Generate predictions (for PREDICT and EVAL mode)
+        # Generate class predictions 0-9 based on the highest value in logits (for PREDICT and EVAL mode)
         "classes": tf.argmax(input=logits, axis=1),
         # Add softmax_tensor to the graph. It is used for PREDICT and by the
         # logging_hook
@@ -83,10 +83,13 @@ def cnn_model_fn(features, labels, mode):
     if mode == tf.estimator.ModeKeys.PREDICT:
         return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions)
 
-    # Calculate Loss (for both TRAIN and EVAL modes)
+    # Calculate Loss (for both TRAIN and EVAL modes) using cross entropy (recommended function for
+    # multiclass problems)
+    # Loss function tells us how closely the model's predictions match the target class
     loss = tf.losses.sparse_softmax_cross_entropy(labels=labels, logits=logits)
 
-    # Configure the Training Op (for TRAIN mode)
+    # Configure the Training Op (for TRAIN mode) optimizing on the Loss value we found above
+    # (Minimize loss)
     if mode == tf.estimator.ModeKeys.TRAIN:
         optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.001)
         train_op = optimizer.minimize(
